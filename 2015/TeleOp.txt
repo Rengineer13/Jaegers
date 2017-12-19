@@ -1,0 +1,288 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
+
+import static java.lang.Thread.sleep;
+
+/**
+ * Created by BINDERBOT on 10/30/2015.
+ */
+public class TeleOp extends OpMode {
+
+    final static double LEFT_MIN_RANGE = 0.0;
+    final static double LEFT_MAX_RANGE = 1.0;
+    final static double RIGHT_MIN_RANGE = 0.0;
+    final static double RIGHT_MAX_RANGE = 1.0;
+    final static double Y_MIN_RANGE = 0.0;
+    final static double Y_MAX_RANGE = 1.0;
+    final static double X_MIN_RANGE = 0.0;
+    final static double X_MAX_RANGE = 1.0;
+    final static double TUBE_MIN_RANGE = 0.0;
+    final static double TUBE_MAX_RANGE = 1.0;
+
+    double leftDelta = 1.0;
+    double leftPosition;
+
+    double rightDelta = 1.0;
+    double rightPosition;
+
+    double debrisYDelta = 0.5;
+    double debrisYPosition;
+
+    double debrisXDelta = 0.005;
+    double debrisXPosition;
+
+    double tubeDelta = 0.1;
+    double tubePosition;
+
+    boolean Reverse = false;
+    boolean rightserv = true;
+    boolean leftserv = false;
+    DcMotor motorRight;
+    DcMotor motorLeft;
+    DcMotor motorArm;
+    DcMotor motorTurbo;
+    DcMotor motorBrush;
+
+    Servo Right;
+    Servo Left;
+    Servo debrisX;
+    Servo debrisY;
+    Servo tube;
+
+    @Override
+    public void init() {
+        motorRight = hardwareMap.dcMotor.get("m1");
+        motorLeft = hardwareMap.dcMotor.get("m2");
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
+        motorArm = hardwareMap.dcMotor.get("m3");
+        motorBrush = hardwareMap.dcMotor.get("m4");
+        motorTurbo = hardwareMap.dcMotor.get("m5");
+
+        Right = hardwareMap.servo.get("s1");
+        Left = hardwareMap.servo.get("s2");
+        debrisX = hardwareMap.servo.get("s3");
+        debrisY = hardwareMap.servo.get("s4");
+        tube = hardwareMap.servo.get("s5");
+
+        rightPosition = 0.0;
+        leftPosition = 0.0;
+        debrisXPosition = 0.98;
+        debrisYPosition = 0.5;
+        /* X is a continuous servo*/
+        tubePosition = 1.0;
+    }
+
+    @Override
+    public void loop() {
+
+        if(gamepad1.x){
+
+            if(Reverse == true) {
+
+                Reverse = false;
+            }
+            else if(Reverse == false){
+
+                Reverse = true;
+
+            }
+            try {
+                sleep(250);
+            } catch (InterruptedException e) {
+
+            }
+
+        }
+        if(gamepad1.right_bumper){
+
+            if(rightserv == true) {
+
+                rightserv = false;
+            }
+            else if(rightserv == false){
+
+                rightserv = true;
+
+            }
+            try {
+                sleep(250);
+            } catch (InterruptedException e) {
+
+            }
+
+        }
+        if(gamepad1.left_bumper){
+
+            if(leftserv == true) {
+
+                leftserv = false;
+            }
+            else if(leftserv == false){
+
+                leftserv = true;
+
+            }
+            try {
+                sleep(250);
+            } catch (InterruptedException e) {
+
+            }
+
+        }
+
+
+
+        float left = -gamepad1.left_stick_y;
+        float right = -gamepad1.right_stick_y;
+        float arm = -gamepad2.right_stick_y;
+
+
+
+
+        right = (float)scaleInput(right);
+        left = (float)scaleInput(left);
+        arm = (float)scaleInput(arm);
+
+
+        if (Reverse == true) {
+
+            motorLeft.setPower(left);
+            motorRight.setPower(right);
+
+        }
+        else if (Reverse == false){
+
+            motorRight.setPower(-left);
+            motorLeft.setPower(-right);
+
+        }
+        if (rightserv == true) {
+
+
+            leftPosition = 1.0;
+
+        }
+        else if (rightserv == false){
+
+            leftPosition = 0.0;
+
+        }
+        if (leftserv == true) {
+
+
+            rightPosition = 1.0;
+
+        }
+        else if (leftserv == false){
+
+            rightPosition = 0.0;
+
+        }
+        motorArm.setPower(-arm);
+
+        if (gamepad1.a) {
+            motorBrush.setPower(1.0);
+        }
+        if (gamepad1.y) {
+            motorBrush.setPower(-1.0);
+        }
+        if (gamepad1.b) {
+            motorBrush.setPower(0.0);
+        }
+
+        if (gamepad2.x){
+            tubePosition = 1.0;
+        }
+        if (gamepad2.y){
+            tubePosition = 0.0;
+        }
+
+        if((gamepad1.left_bumper)){
+            leftPosition = 0.0;
+        }
+
+        if((gamepad2.dpad_left)){
+            debrisYPosition += debrisYDelta;
+        }
+        else {
+            debrisYPosition = debrisYDelta;
+        }
+
+        if ((gamepad2.dpad_right)){
+            debrisYPosition -= debrisYDelta;
+        }
+
+        if ((gamepad2.dpad_up)){
+            debrisXPosition += debrisXDelta;
+        }
+
+        if ((gamepad2.dpad_down)){
+            debrisXPosition -= debrisXDelta;
+        }
+
+        if(!(gamepad1.right_trigger == 0)){
+
+            motorTurbo.setPower(gamepad1.right_trigger);
+
+        }
+        else if(!(gamepad1.left_trigger == 0)){
+
+            motorTurbo.setPower(-gamepad1.left_trigger);
+
+        }
+        else{
+            motorTurbo.setPower(0);
+        }
+        leftPosition = Range.clip(leftPosition, LEFT_MIN_RANGE, LEFT_MAX_RANGE);
+        rightPosition = Range.clip(rightPosition, RIGHT_MIN_RANGE, RIGHT_MAX_RANGE);
+        debrisYPosition = Range.clip(debrisYPosition, Y_MIN_RANGE, Y_MAX_RANGE);
+        debrisXPosition = Range.clip(debrisXPosition, X_MIN_RANGE, X_MAX_RANGE);
+        tubePosition = Range.clip(tubePosition, TUBE_MIN_RANGE, TUBE_MAX_RANGE);
+
+        Left.setPosition(leftPosition);
+        Right.setPosition(rightPosition);
+        debrisY.setPosition(debrisYPosition);
+        debrisX.setPosition(debrisXPosition);
+        tube.setPosition(tubePosition);
+
+        telemetry.addData("Text", "*** Robot Data***");
+        telemetry.addData("left tgt pwr", "left  pwr: " + String.format("%.2f", left));
+        telemetry.addData("right tgt pwr", "right pwr: " + String.format("%.2f", right));
+    }
+    @Override
+    public void stop() {
+    }
+
+    double scaleInput (double dVal) {
+        double[] scaleArray = {0.0, 0.05, 0.09, 0.10, 0.12, 0.15, 0.18, 0.24,
+                0.30, 0.36, 0.43, 0.50, 0.60, 0.72, 0.85, 1.00, 1.00 };
+
+        int index = (int) (dVal * 16.0);
+
+        // index should be positive.
+        if (index < 0) {
+            index = -index;
+        }
+
+        // index cannot exceed size of array minus 1.
+        if (index > 16) {
+            index = 16;
+        }
+
+        // get value from the array.
+        double dScale = 0.0;
+        if (dVal < 0) {
+            dScale = -scaleArray[index];
+        } else {
+            dScale = scaleArray[index];
+        }
+
+        // return scaled value.
+        return dScale;
+    }
+}
+

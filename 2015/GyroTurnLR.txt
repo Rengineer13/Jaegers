@@ -1,0 +1,74 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+        import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+        import com.qualcomm.robotcore.hardware.DcMotor;
+        import com.qualcomm.robotcore.hardware.DcMotorController;
+        import com.qualcomm.robotcore.hardware.GyroSensor;
+        import com.qualcomm.robotcore.util.Range;
+
+        import static java.lang.Math.abs;
+
+/**
+ * Created by batson on 11/24/2015.
+ */
+
+public class GyroTurnLR extends OpMode {
+    public DcMotor motorRight;
+    public DcMotor motorLeft;
+    public GyroSensor Gyro;
+    public int xVal, yVal, zVal = 0;
+    public int heading = 0;
+
+
+    @Override
+    public void init() {
+
+        motorLeft = hardwareMap.dcMotor.get("m1");
+        motorRight = hardwareMap.dcMotor.get("m2");
+        Gyro = hardwareMap.gyroSensor.get("gyro");
+        Gyro.calibrate();
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
+
+    }
+
+    public void init_loop() {
+
+    }
+    @Override
+    public void start() {
+    }
+
+    @Override
+    public void loop() {
+        double target_angle_degrees = 270;
+        double error_degrees = (target_angle_degrees - (Gyro.getHeading()+360));
+        double new_error_degrees;
+
+        if (error_degrees < -180) {
+            new_error_degrees = (error_degrees + 360);
+        }
+        else
+        {
+            new_error_degrees = error_degrees;
+        }
+        double motor_output = (new_error_degrees / 180) + (new_error_degrees > 0 ? .05 : -.05);
+
+        if (!Gyro.isCalibrating()) {
+            if (Math.abs(new_error_degrees) > 30) {
+                motorLeft.setPower((.2 * Math.signum(new_error_degrees)));
+                motorRight.setPower((.2 * Math.signum(new_error_degrees)));
+            } else
+                motorLeft.setPower(motor_output);
+                motorRight.setPower(-motor_output);
+        }
+        xVal = Gyro.rawX();
+        yVal = Gyro.rawY();
+        zVal = Gyro.rawZ();
+        heading = Gyro.getHeading();
+        telemetry.addData("1. x", String.format("%03d", xVal));
+        telemetry.addData("2. y", String.format("%03d", yVal));
+        telemetry.addData("3. z", String.format("%03d", zVal));
+        telemetry.addData("4. h", String.format("%03d", heading));
+    }
+}

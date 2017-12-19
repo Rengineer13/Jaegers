@@ -1,0 +1,69 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+
+/**
+ * Created by Robbi.Hancock on 12/6/2015.
+ */
+public class LinearGyro extends LinearOpMode {
+
+    DcMotor motorLeft;
+    DcMotor motorRight;
+    GyroSensor gyro;
+
+    boolean DEGREES_TURNED;
+    final static int TOLERANCE = 1;
+
+
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+        motorLeft = hardwareMap.dcMotor.get("m1");
+        motorRight = hardwareMap.dcMotor.get("m2");
+        gyro = hardwareMap.gyroSensor.get("gyro");
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
+        gyro.calibrate();
+        gyro.getHeading();
+
+
+
+        waitForStart();
+
+        for(int i=0; i<2; i++) {
+
+        int xVal, yVal, zVal = 0;
+        int heading = 0;
+        heading = gyro.getHeading();
+        xVal = gyro.rawX();
+        yVal = gyro.rawY();
+        zVal = gyro.rawZ();
+             telemetry.addData("1. x", String.format("%03d", xVal));
+             telemetry.addData("2. y", String.format("%03d", yVal));
+             telemetry.addData("3. z", String.format("%03d", zVal));
+             telemetry.addData("4. h", String.format("%03d", heading));
+
+
+            if (!gyro.isCalibrating()) {
+                if ((gyro.getHeading() <= 90 + TOLERANCE) && (gyro.getHeading() >= 90 - TOLERANCE)) {
+                    DEGREES_TURNED = true;
+
+                    motorLeft.setPower(0);
+                    motorRight.setPower(0);
+                }
+                if (!DEGREES_TURNED) {
+                    motorLeft.setPower(0.175);
+                    motorRight.setPower(-0.175);
+                }
+            }
+        }
+        motorLeft.setPower(1.0);
+        motorRight.setPower(1.0);
+        sleep(1000);
+
+        motorLeft.getPowerFloat();
+        motorRight.getPowerFloat();
+
+    }
+}

@@ -1,0 +1,46 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+
+
+/**
+ * Created by Reed.Hancock on 10/20/2015.
+ */
+public class GyroTest extends OpMode{
+
+    DcMotor motorLeft;
+    DcMotor motorRight;
+    GyroSensor gyroSensor;
+
+    @Override
+    public void init() {
+
+        gyroSensor = hardwareMap.gyroSensor.get("gyro_sensor");
+        motorLeft = hardwareMap.dcMotor.get("m1");
+        motorRight = hardwareMap.dcMotor.get("m2");
+
+    }
+
+    @Override
+    public void loop() {
+
+
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
+        double gyroSensorRotation = (255);
+
+        motorLeft.setPower(0.5);
+        motorRight.setPower(0.5);
+
+
+
+
+
+
+
+
+
+    }
+}
+

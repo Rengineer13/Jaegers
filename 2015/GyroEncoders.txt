@@ -1,0 +1,87 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+
+/**
+ * Created by Robbi.Hancock on 11/5/2015.
+ */
+public class GyroTest3 extends OpMode {
+
+
+
+        DcMotor motorLeft;
+        DcMotor motorRight;
+        GyroSensor gyro;
+
+
+        final static int ENCODER_CPR = 1120;
+        final static double GEAR_RATIO = 1;
+        final static int WHEEL_DIAMETER = 3;
+        final static int DISTANCE = 60;
+
+        final static double CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
+        final static double ROTATIONS = DISTANCE / CIRCUMFERENCE;
+        final static double COUNTS = ENCODER_CPR * ROTATIONS * GEAR_RATIO;
+
+        final static int TOLERANCE = 1;
+        boolean DEGREES_TURNED;
+
+
+        @Override
+        public void init() {
+
+            motorLeft = hardwareMap.dcMotor.get("m1");
+            motorRight = hardwareMap.dcMotor.get("m2");
+            gyro = hardwareMap.gyroSensor.get("gyro");
+            motorRight.setDirection(DcMotor.Direction.REVERSE);
+            gyro.calibrate();
+
+
+        }
+
+        @Override
+        public void loop() {
+
+
+            gyro.getHeading();
+            int xVal, yVal, zVal = 0;
+            int heading = 0;
+            heading = gyro.getHeading();
+
+            if (!gyro.isCalibrating()) {
+                if ((gyro.getHeading() <= 45 + TOLERANCE) && (gyro.getHeading() >= 45 - TOLERANCE)) {
+                    DEGREES_TURNED = true;
+
+                    motorLeft.setPower(0);
+                    motorRight.setPower(0);
+                }
+                if (!DEGREES_TURNED) {
+                    motorLeft.setPower(0.175);
+                    motorRight.setPower(-0.175);
+                }
+            }
+
+            xVal = gyro.rawX();
+            yVal = gyro.rawY();
+            zVal = gyro.rawZ();
+
+            telemetry.addData("1. x", String.format("%03d", xVal));
+            telemetry.addData("2. y", String.format("%03d", yVal));
+            telemetry.addData("3. z", String.format("%03d", zVal));
+            telemetry.addData("4. h", String.format("%03d", heading));
+
+            if (DEGREES_TURNED = true){
+
+                motorLeft.setTargetPosition((int) (COUNTS));
+                motorRight.setTargetPosition((int) (COUNTS));
+                motorRight.setChannelMode(DcMotorController.RunMode.RUN_TO_POSITION);
+                motorLeft.setChannelMode(DcMotorController.RunMode.RUN_TO_POSITION);
+
+            }
+
+
+        }
+    }

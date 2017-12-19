@@ -1,0 +1,82 @@
+package com.qualcomm.ftcrobotcontroller.opmodes;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+
+/**
+ * Created by Robbi.Hancock on 11/19/2015.
+ */
+public class AutoSmall extends OpMode {
+
+  private enum State {
+      STATE_TURN
+  }
+    DcMotor motorRight;
+    DcMotor motorLeft;
+    GyroSensor gyro;
+
+    boolean DEGREES_TURNED;
+
+    private State CurrentState;
+
+    final static int TOLERANCE = 1;
+
+
+
+
+    @Override
+    public void init() {
+        motorLeft = hardwareMap.dcMotor.get("m1");
+        motorRight = hardwareMap.dcMotor.get("m2");
+
+        motorRight.setDirection(DcMotor.Direction.REVERSE);
+
+        gyro = hardwareMap.gyroSensor.get("gyro");
+        gyro.calibrate();
+    }
+
+    @Override
+    public void loop() {
+        switch (CurrentState){
+
+            case STATE_TURN:
+                gyro.calibrate();
+
+                gyro.getHeading();
+                int xVal, yVal, zVal = 0;
+                int heading = 0;
+                heading = gyro.getHeading();
+
+                xVal = gyro.rawX();
+                yVal = gyro.rawY();
+                zVal = gyro.rawZ();
+
+                telemetry.addData("1. x", String.format("%03d", xVal));
+                telemetry.addData("2. y", String.format("%03d", yVal));
+                telemetry.addData("3. z", String.format("%03d", zVal));
+                telemetry.addData("4. h", String.format("%03d", heading));
+
+                if (!gyro.isCalibrating()) {
+
+
+                    if ((gyro.getHeading() <= (90 + TOLERANCE)) && (gyro.getHeading() >= (90 - TOLERANCE)))
+
+
+                        DEGREES_TURNED = true;
+
+                    motorLeft.setPower(0);
+                    motorRight.setPower(0);
+                }
+                if (!DEGREES_TURNED) {
+                    motorLeft.setPower(0.175);
+                    motorRight.setPower(-0.175);
+                }
+                stop();
+
+                 break;
+
+        }
+
+    }
+}
